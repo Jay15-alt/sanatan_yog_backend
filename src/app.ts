@@ -1,5 +1,5 @@
 // =============================================================
-// src/app.ts   — Application entry-point
+// src/app.ts   — Application configuration
 // =============================================================
 
 import express from 'express';
@@ -8,19 +8,20 @@ import { attachIp } from './middleware/auth';
 
 // Controllers
 import authController       from './controllers/authController';
-import organizationController from './controllers/organizationController';
-import volunteerController  from './controllers/volunteerController';
-import contributorController from './controllers/contributorController';
 import donationController   from './controllers/donationController';
 import commissionController from './controllers/commissionController';
 import workController        from './controllers/workController';
 import eventController       from './controllers/eventController';
 import categoryController   from './controllers/categoryController';
+import adminRoutes           from './routes/adminRoutes';
+import subadminRoutes        from './routes/subadminRoutes';
+import commonRoutes          from './routes/commonRoutes';
+import volunteerRoutes       from './routes/volunteerRoutes';
+import contributorRoutes     from './routes/contributorRoutes';
 
 dotenv.config();
 
-const app  = express();
-const PORT = parseInt(process.env.PORT || '3000', 10);
+const app = express();
 
 // ─── Global middleware ──────────────────────────────────────
 app.use(express.json());
@@ -31,14 +32,16 @@ app.get('/health', (_req, res) => res.json({ status: 'ok', timestamp: new Date()
 
 // ─── Route mounting ─────────────────────────────────────────
 app.use('/auth',         authController);
-app.use('/org',          organizationController);
-app.use('/volunteers',   volunteerController);
-app.use('/contributors', contributorController);
+app.use('/volunteer',    volunteerRoutes);
+app.use('/contributor',  contributorRoutes);
 app.use('/donations',    donationController);
 app.use('/commissions',  commissionController);
 app.use('/works',        workController);
 app.use('/events',       eventController);
 app.use('/categories',   categoryController);
+app.use('/admin',        adminRoutes);
+app.use('/subadmin',     subadminRoutes);
+app.use('/common',       commonRoutes);
 
 // ─── 404 catch-all ──────────────────────────────────────────
 app.use((_req, res) => {
@@ -49,11 +52,6 @@ app.use((_req, res) => {
 app.use((err: Error, _req: express.Request, res: express.Response, _next: express.NextFunction) => {
   console.error('[ERROR]', err);
   res.status(500).json({ success: false, error: 'Internal server error.', statusCode: 500 });
-});
-
-// ─── Start ──────────────────────────────────────────────────
-app.listen(PORT, () => {
-  console.log(`[SERVER] Client Doc Flow API running on http://localhost:${PORT}`);
 });
 
 export default app;

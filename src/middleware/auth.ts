@@ -1,11 +1,11 @@
 // =============================================================
 // src/middleware/auth.ts
 // =============================================================
-// Token stub: the controller mints tokens as base64(JSON(TokenPayload)).
-// Replace mintToken / the decode block here with real JWT when ready.
+// Updated to use proper JWT tokens (no more base64 stub)
 // =============================================================
 
 import { Request, Response, NextFunction } from 'express';
+import jwt from 'jsonwebtoken';
 import { TokenPayload, RoleName } from '../types';
 import { sendError } from '../utils/response';
 import pool from '../config/database';
@@ -28,11 +28,7 @@ export function attachIp(req: Request, _res: Response, next: NextFunction): void
 }
 
 /**
- * Authenticate – decode the bearer token from the Authorization header.
- *
- * Stub behaviour: expects   Authorization: Bearer <base64-encoded TokenPayload>
- * Replace the decode block with jsonwebtoken.verify() in production.
- *
+ * Authenticate – verify JWT token from the Authorization header.
  * Works identically for both login paths because TokenPayload already
  * carries `source: 'ADMIN' | 'ORG'` — no branching needed here.
  */
@@ -44,12 +40,19 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
     return;
   }
 
-  const raw = authHeader.slice(7); // strip "Bearer "
+  const token = authHeader.slice(7); // strip "Bearer "
 
   try {
-    // ── STUB decode ─────────────────────────────────────────
-    // Production: replace with  jwt.verify(raw, process.env.JWT_SECRET)
-    const payload: TokenPayload = JSON.parse(Buffer.from(raw, 'base64').toString('utf-8'));
+    // Get JWT secret from environment
+    const secret = process.env.JWT_SECRET;
+    if (!secret) {
+      console.error('[AUTH] JWT_SECRET is not configured');
+      sendError(res, 'Server configuration error.', 500);
+      return;
+    }
+
+    // Verify and decode JWT token
+    const payload = jwt.verify(token, secret) as TokenPayload;
 
     // Minimal sanity check
     if (!payload.source || !payload.role) {
@@ -59,7 +62,15 @@ export function authenticate(req: Request, res: Response, next: NextFunction): v
 
     req.user = payload;
     next();
-  } catch {
+  } catch (err) {
+    if (err instanceof jwt.TokenExpiredError) {
+      sendError(res, 'Token has expired.', 401);
+      return;
+    }
+    if (err instanceof jwt.JsonWebTokenError) {
+      sendError(res, 'Invalid token.', 401);
+      return;
+    }
     sendError(res, 'Invalid or expired token.', 401);
   }
 }
@@ -93,6 +104,7 @@ export function resolveActorId(payload: TokenPayload): number {
   if (payload.source === 'ADMIN') return payload.admin_id!;
   return payload.user_id!;
 }
+
 export async function writeAuditLog(
   userId: number | null,
   action: string,

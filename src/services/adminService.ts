@@ -93,4 +93,15 @@ export class AdminService {
   static async deactivate(id: number): Promise<void> {
     await pool.execute('UPDATE admins SET is_active = 0 WHERE id = ?', [id]);
   }
+
+  // ─── Activate / Role update ─────────────────────────────────
+
+  static async activate(id: number): Promise<void> {
+    await pool.execute('UPDATE admins SET is_active = 1 WHERE id = ?', [id]);
+  }
+
+  static async updateRole(id: number, role: 'ADMIN' | 'SUBADMIN'): Promise<Admin> {
+    await pool.execute('UPDATE admins SET role = ? WHERE id = ?', [role, id]);
+    return (await AdminService.findById(id))!;
+  }
 }

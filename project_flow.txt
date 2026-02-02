@@ -1,0 +1,269 @@
+Client Documentation Flow - Complete 
+System Design 
+System Architecture 
+ADMIN (Root Level) 
+  ├── SubAdmin (Full Access - Level 1) 
+  └── Peeth (Division Level) 
+      └── Shakha (District Level) 
+          ├── Teams 
+          │   └── Volunteers (Staff/Field Worker/Guest) 
+          │       └── Contributors (General/Trustee/Gruhini) 
+          └── SubShakha (Taluka Level) 
+              ├── Teams 
+              │   └── Volunteers (Staff/Field Worker/Guest) 
+              │       └── Contributors (General/Trustee/Gruhini) 
+  
+ 
+Role-Based Access & Responsibilities 
+1. ADMIN 
+• Manage SubAdmins, Peeth, Shakha, SubShakha 
+• Work Management (Proposed/Ongoing/Completed) 
+• Payment Management (All levels) 
+• Event Management (Create/Edit all events) 
+• System-wide oversight 
+• Admin can Add custom Contributor Category 
+• Guests will be Managed Shakhas and assigned by shkha 
+2. SUBADMIN 
+• All Admin functions except SubAdmin management 
+• Full access to Peeth, Shakha, SubShakha 
+• Work, Payment, Event management 
+• Guests will be Managed Shakhas and assigned by shkha 
+3. PEETH (Division Level) 
+• Manage Shakhas under their division 
+• Create events (can only edit self-created) 
+• Division-level reports and oversight 
+• Cannot access other Peeths 
+• Guests will be Managed  
+4. SHAKHA (District Level) 
+• Create/Manage SubShakhas in their district 
+• Create/Manage Teams and Volunteers 
+• Update Contributor Type (General → Trustee/Gruhini) 
+• Verify PAN cards 
+• District-level donation reports 
+• Approve Field Worker commissions 
+• Reassignment of Contributors to another Team 
+5. SUBSHAKHA (Taluka Level) 
+• Create/Manage Teams and Volunteers 
+• Oversee donation collection 
+• Manage contributor database 
+• Taluka-level reports 
+• Approve Field Worker commissions 
+Team & Volunteer Structure 
+Teams (Created by Shakha/SubShakha) 
+• Multiple teams per Shakha/SubShakha 
+Volunteer Types 
+1. STAFF VOLUNTEER 
+• Compensation: Fixed monthly salary 
+• Commission Applicable On: - (Optional) 
+o    
+Amount Donations (X% of amount) 
+o    
+o   
+•  
+Rice/Grain Donations (X% of monetary value) 
+Custom Donations (No commission) 
+• Role: Add/Verify contributors, Collect donations, Event work 
+2. FIELD WORKER VOLUNTEER 
+• Compensation: Commission-based 
+• Commission Applicable On: 
+o    
+Amount Donations (X% of amount) 
+o    
+Rice/Grain Donations (X% of monetary value) 
+• Role: Add/Verify contributors, Collect donations, Event work 
+3. GUEST VOLUNTEER 
+• Compensation: Event-based/Voluntary 
+• Role: Event work only, to train under senior volunteer 
+• Guests will be Managed Shakhas and assigned by shkha  
+Contributor Onboarding & Management 
+Contributor Addition Methods 
+Method 1: Website Self-Registration 
+• User registers on website 
+• Status: UNVERIFIED 
+• Awaits volunteer verification 
+• Account will be Created 
+• Login will be of OTP  
+• Unless verify no login 
+Method 2: Volunteer Direct Addition (2-Step Process) 
+STEP 1: Initial Account Creation (Without PAN) 
+• Volunteer adds contributor with basic details 
+• System generates Unique ID 
+• Account created with Status: "PAN Pending" 
+• Type: General Contributor (default) 
+• Login will be of OTP 
+STEP 2: PAN Card Update & Verification 
+• Contributor logs in and uploads PAN card 
+• Volunteer receives notification 
+• Volunteer verifies PAN details 
+• If approved → Status: VERIFIED 
+Contributor Account Features 
+• Profile with PAN status indicator 
+• Transaction History (All donations with dates, types, amounts, receipts) 
+• Donation management 
+• Notifications and event invitations 
+• Geo Location Coordinates but Optional (If Feasible Only)  
+Contributor Types 
+Classification Hierarchy 
+All contributors start as General Contributor → Shakha upgrades to Trustee/Gruhini 
+While adding the Contributor take the photo – Facial, Full photo, House Photo 
+1. GENERAL CONTRIBUTOR (Default) 
+• Standard contributor 
+• No specific commitment 
+• Single/occasional donations 
+2. TRUSTEE (Regular Donor) 
+• Regular, committed contributors 
+• Upgraded by Shakha based on donation history 
+• Recurring donation setup 
+• Priority communication and recognition 
+3. GRUHINI (Single Female per Family) 
+• Rule: Only ONE Gruhini per family/household 
+• Female contributor only 
+• Upgraded by Shakha after verification 
+• System validates no duplicate at same address 
+• Special recognition and features 
+Donation Types 
+1. AMOUNT DONATION 
+• (Online):-Cash/UPI-NEFT-RTGS/Bank Transfer/Cheque 
+• Volunteer records in system 
+• Instant receipt generated 
+• Commission:    YES (Field Workers) 
+2. RICE/GRAIN DONATION 
+• Physical collection by volunteer 
+• Quantity recorded (Kg) 
+• System calculates monetary value (market rate) 
+• Commission:    YES (Based on monetary value) 
+• Minimum 1 KG for the Commission 
+3. CUSTOM DONATION 
+• Clothing, Books, Equipment, Services, etc. 
+• Description and documentation 
+• No monetary equivalent required 
+• Commission:( Optional) 
+Work Management 
+Three Stages: 
+1. Proposed Work - Submission, Approval workflow 
+2. Ongoing Work - Progress tracking 
+3. Completed Work - Documentation, Budget reconciliation 
+Access: 
+• Admin/SubAdmin: Full access 
+• Peeth/Shakha: Limited to their level 
+• SubShakha: View only 
+Payment Management 
+Components: 
+• Donation tracking (multi-level) 
+• Field Worker commission calculation 
+• Staff salary processing 
+• Financial reporting 
+• Transaction audit trails 
+• Expense Management  
+Commission Processing: 
+Donation Collected → Recorded → Commission Auto-calculated 
+↓ 
+SubShakha/Shakha Reviews → Validates 
+↓ 
+Volunteer Receives Confirmation 
+Event Management 
+Features: 
+• Event creation by Admin/SubAdmin/Peeth/Shakha/SubShakha 
+• Edit Restriction: Can only edit self-created events 
+• Admin/SubAdmin can edit all events 
+• Event calendar and participant registration 
+• Volunteer assignment for event work 
+Workflow 1: Contributor Journey 
+Volunteer adds contributor (no PAN) → ID generated -> contributor 
+OTP verify (Optional) → Account created->  
+↓ 
+Contributor uploads PAN → Volunteer verifies → Status: VERIFIED 
+↓ 
+Shakha reviews activity → Upgrades to Trustee/Gruhini (if eligible) 
+Workflow 2: Donation Collection 
+Volunteer collects donation → Records in system → Receipt generated 
+↓ 
+Commission calculated (if Field Worker =>  Amount/Rice) 
+↓ 
+Contributor transaction history updated 
+↓ 
+SubShakha/Shakha approves commission → Payment processed 
+Workflow 3: Gruhini Designation 
+Female contributor registered (General) 
+↓ 
+Shakha checks address for existing Gruhini 
+↓ 
+If NO duplicate → Upgrade to Gruhini → Unique badge assigned 
+If duplicate → Reject (One per family rule) 
+Data Flow 
+Contributors (Donate) 
+↓ 
+Volunteers (Collect & Record via Teams) 
+↓ 
+SubShakha (Consolidate & Verify) 
+↓ 
+Shakha (District Summary & Type Management) 
+↓ 
+Peeth (Division Analytics) 
+↓ 
+Admin/SubAdmin (System-wide Overview) 
+Attendance Workflow (Single Scan – User 
+Based) 
+STEP 1: Attendance Marking (Single Scan) 
+Process: 
+• User opens the website 
+• User scans the Event QR Code displayed at the venue 
+• System verifies the user and event 
+System Records: 
+• User ID 
+• Event ID 
+• Scan Time (timestamp) 
+• Status: Present 
+Only one scan is required per user per event. Duplicate scans 
+are ignored. 
+Attendance Status 
+•    Present – Event QR scanned successfully 
+•   Absent – Event QR not scanned 
+Attendance Report Generation 
+Individual Attendance Record 
+For Each Volunteer / Member: 
+• Event Name 
+• Event Date 
+• Scan Time 
+• Status (Present / Absent) 
+• Event Category 
+Event-Level Report 
+Generated After Event Completion 
+Summary Includes: 
+• Event Name & Date 
+• Total Registered Participants 
+• Total Attendees (Present) 
+Volunteer / Member Dashboard 
+Attendance History Includes: 
+• List of all events attended 
+• Total events participated 
+• Attendance percentage 
+Event Created → Event QR Generated 
+↓ 
+Event Day → QR Displayed at Venue 
+↓ 
+User Scans Event QR (Single Scan) 
+↓ 
+Attendance Marked as Present 
+↓ 
+Event Ends → Duration Auto-Calculated 
+↓ 
+System Generates Attendance Reports 
+Commission Structure System 
+Tiered Commission Slabs 
+Commision is Customizable 
+Default Commission Structure (for Field Workers): 
+Donation Amount 
+Range 
+Rupee 10- ₹100 
+₹100 - ₹1,000 
+₹1,001 - ₹5,000 
+₹5,001 - ₹1,00,000 
+₹1,00,001 - ₹10,00,000 
+END OF DOCUMENTATION 
+Commission 
+₹5 (Fixed) 
+₹10 (Fixed) 
+5% 
+5% 
+4% 
