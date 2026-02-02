@@ -28,6 +28,30 @@ import {
   listAllContributors,
   activateContributor,
 } from '../controllers/contributorController';
+import {
+  createEvent,
+  listEvents,
+  getEvent,
+  updateEvent,
+  deactivateEvent,
+  registerParticipant,
+  getEventParticipants,
+  markAttendance,
+  getUserAttendanceHistory,
+  getEventAttendanceReport,
+} from '../controllers/eventController';
+import {
+  createPeeth,
+  listPeeths,
+  getPeeth,
+  getPeethByCode,
+  updatePeeth,
+  deactivatePeeth,
+  activatePeeth,
+  getPeethShakhas,
+  getPeethStatistics,
+  getPeethContributorsSummary,
+} from '../controllers/peethController';
 
 const router = Router();
 
@@ -50,6 +74,25 @@ router.put   ('/subadmins/:id/role',       authenticate, roleGuard('ADMIN'), upd
 // ─── Commissions ────────────────────────────────────────────────────────────
 router.put   ('/commissions/:id/pay',      authenticate, roleGuard('ADMIN', 'SUBADMIN'), payCommission);
 
+// ─── Peeth Management (Division Level) ──────────────────────────────────────
+
+// CRUD Operations
+router.post  ('/peeths',                   authenticate, roleGuard('ADMIN', 'SUBADMIN'), createPeeth);
+router.get   ('/peeths',                   authenticate, roleGuard('ADMIN', 'SUBADMIN'), listPeeths);
+router.get   ('/peeths/:id',               authenticate, roleGuard('ADMIN', 'SUBADMIN'), getPeeth);
+router.get   ('/peeths/code/:code',        authenticate, roleGuard('ADMIN', 'SUBADMIN'), getPeethByCode);
+router.put   ('/peeths/:id',               authenticate, roleGuard('ADMIN', 'SUBADMIN'), updatePeeth);
+router.put   ('/peeths/:id/deactivate',    authenticate, roleGuard('ADMIN', 'SUBADMIN'), deactivatePeeth);
+router.put   ('/peeths/:id/activate',      authenticate, roleGuard('ADMIN', 'SUBADMIN'), activatePeeth);
+
+// Hierarchical Data
+router.get   ('/peeths/:id/shakhas',       authenticate, roleGuard('ADMIN', 'SUBADMIN'), getPeethShakhas);
+
+// Analytics & Reports
+router.get   ('/peeths/:id/statistics',    authenticate, roleGuard('ADMIN', 'SUBADMIN'), getPeethStatistics);
+router.get   ('/peeths/:id/contributors',  authenticate, roleGuard('ADMIN', 'SUBADMIN'), getPeethContributorsSummary);
+
+// ─── Contributor Management ─────────────────────────────────────────────────
 
 // List all contributors (filterable via query string — see handler)
 router.get   ('/contributors',                          authenticate, roleGuard('ADMIN'), listAllContributors);
@@ -79,5 +122,25 @@ router.put   ('/contributors/:id/reassign',             authenticate, roleGuard(
 // Activate / deactivate
 router.put   ('/contributors/:id/activate',             authenticate, roleGuard('ADMIN'), activateContributor);
 router.delete('/contributors/:id',                      authenticate, roleGuard('ADMIN'), deactivateContributor);
+
+// ─── Event Management ───────────────────────────────────────────────────────
+
+// Events CRUD
+router.post  ('/events',                    authenticate, roleGuard('ADMIN', 'SUBADMIN'), createEvent);
+router.get   ('/events',                    authenticate, listEvents);
+router.get   ('/events/:id',                authenticate, getEvent);
+router.put   ('/events/:id',                authenticate, roleGuard('ADMIN', 'SUBADMIN'), updateEvent);
+router.delete('/events/:id',                authenticate, roleGuard('ADMIN', 'SUBADMIN'), deactivateEvent);
+
+// Event Participants
+router.post  ('/events/:id/participants',   authenticate, registerParticipant);
+router.get   ('/events/:id/participants',   authenticate, getEventParticipants);
+
+// Attendance
+router.post  ('/events/attendance/scan',              authenticate, markAttendance);
+router.get   ('/events/attendance/user/:userId',      authenticate, getUserAttendanceHistory);
+
+// Reports
+router.get   ('/events/:id/report',         authenticate, roleGuard('ADMIN', 'SUBADMIN'), getEventAttendanceReport);
 
 export default router;

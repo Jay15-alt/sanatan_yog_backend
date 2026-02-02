@@ -6,13 +6,15 @@ import express from 'express';
 import dotenv from 'dotenv';
 import { attachIp } from './middleware/auth';
 
-// Controllers
+// Controllers (these should be route files with default exports)
 import authController       from './controllers/authController';
 import donationController   from './controllers/donationController';
 import commissionController from './controllers/commissionController';
 import workController        from './controllers/workController';
-import eventController       from './controllers/eventController';
+// REMOVE THIS LINE: import eventController from './controllers/eventController';
 import categoryController   from './controllers/categoryController';
+
+// Routes
 import adminRoutes           from './routes/adminRoutes';
 import subadminRoutes        from './routes/subadminRoutes';
 import commonRoutes          from './routes/commonRoutes';
@@ -37,7 +39,7 @@ app.use('/contributor',  contributorRoutes);
 app.use('/donations',    donationController);
 app.use('/commissions',  commissionController);
 app.use('/works',        workController);
-app.use('/events',       eventController);
+// REMOVE THIS LINE: app.use('/events', eventController);
 app.use('/categories',   categoryController);
 app.use('/admin',        adminRoutes);
 app.use('/subadmin',     subadminRoutes);

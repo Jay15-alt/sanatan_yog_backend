@@ -1,131 +1,182 @@
 // =============================================================
 // src/controllers/eventController.ts
+// Pure request-handling logic. No route definitions here.
 // =============================================================
 
-import { Router, Request, Response } from 'express';
-import { authenticate, roleGuard, writeAuditLog, resolveActorId } from '../middleware/auth';
+import { Request, Response } from 'express';
 import { EventService } from '../services/eventService';
+import { resolveActorId, writeAuditLog } from '../middleware/auth';
 import { sendSuccess, sendError, ApiError } from '../utils/response';
-
-const router = Router();
-router.use(authenticate);
 
 // ─── Events ─────────────────────────────────────────────────
 
-/** POST /events */
-router.post('/', roleGuard('ADMIN', 'SUBADMIN', 'PEETH', 'SHAKHA', 'SUBSHAKHA'), async (req: Request, res: Response) => {
+/** Create a new event */
+export async function createEvent(req: Request, res: Response): Promise<void> {
   try {
     const event = await EventService.create(req.body, resolveActorId(req.user!));
-    await writeAuditLog(resolveActorId(req.user!), 'CREATE_EVENT', 'events', event.id, req.ipAddress ?? null, undefined, event as unknown as Record<string, unknown>);
+    await writeAuditLog(
+      resolveActorId(req.user!),
+      'CREATE_EVENT',
+      'events',
+      event.id,
+      req.ipAddress ?? null,
+      undefined,
+      event as unknown as Record<string, unknown>
+    );
     sendSuccess(res, event, 201, 'Event created with QR code.');
   } catch (err) {
-    if (err instanceof ApiError) return sendError(res, err.message, err.statusCode);
+    if (err instanceof ApiError) {
+      sendError(res, err.message, err.statusCode);
+      return;
+    }
     sendError(res, 'Internal error.', 500);
   }
-});
+}
 
-/** GET /events */
-router.get('/', async (_req: Request, res: Response) => {
+/** List all events */
+export async function listEvents(_req: Request, res: Response): Promise<void> {
   try {
     const list = await EventService.findAll();
     sendSuccess(res, list);
-  } catch { sendError(res, 'Internal error.', 500); }
-});
+  } catch {
+    sendError(res, 'Internal error.', 500);
+  }
+}
 
-/** GET /events/:id */
-router.get('/:id', async (req: Request, res: Response) => {
+/** Get single event by ID */
+export async function getEvent(req: Request, res: Response): Promise<void> {
   try {
     const event = await EventService.findById(parseInt(req.params.id, 10));
-    if (!event) return sendError(res, 'Event not found.', 404);
+    if (!event) {
+      sendError(res, 'Event not found.', 404);
+      return;
+    }
     sendSuccess(res, event);
-  } catch { sendError(res, 'Internal error.', 500); }
-});
+  } catch {
+    sendError(res, 'Internal error.', 500);
+  }
+}
 
-/**
- * PUT /events/:id
- * Edit restriction: only the creator can edit, unless caller is ADMIN/SUBADMIN.
- */
-router.put('/:id', roleGuard('ADMIN', 'SUBADMIN', 'PEETH', 'SHAKHA', 'SUBSHAKHA'), async (req: Request, res: Response) => {
+/** Update event (only creator or ADMIN/SUBADMIN) */
+export async function updateEvent(req: Request, res: Response): Promise<void> {
   try {
     const event = await EventService.findById(parseInt(req.params.id, 10));
-    if (!event) return sendError(res, 'Event not found.', 404);
+    if (!event) {
+      sendError(res, 'Event not found.', 404);
+      return;
+    }
 
     // Ownership check (ADMIN / SUBADMIN bypass)
     const isAdmin = req.user!.role === 'ADMIN' || req.user!.role === 'SUBADMIN';
     if (!isAdmin && event.created_by !== resolveActorId(req.user!)) {
-      return sendError(res, 'You can only edit events you created.', 403);
+      sendError(res, 'You can only edit events you created.', 403);
+      return;
     }
 
     const updated = await EventService.update(parseInt(req.params.id, 10), req.body);
-    await writeAuditLog(resolveActorId(req.user!), 'UPDATE_EVENT', 'events', updated.id, req.ipAddress ?? null, event as unknown as Record<string, unknown>, updated as unknown as Record<string, unknown>);
+    await writeAuditLog(
+      resolveActorId(req.user!),
+      'UPDATE_EVENT',
+      'events',
+      updated.id,
+      req.ipAddress ?? null,
+      event as unknown as Record<string, unknown>,
+      updated as unknown as Record<string, unknown>
+    );
     sendSuccess(res, updated, 200, 'Event updated.');
   } catch (err) {
-    if (err instanceof ApiError) return sendError(res, err.message, err.statusCode);
+    if (err instanceof ApiError) {
+      sendError(res, err.message, err.statusCode);
+      return;
+    }
     sendError(res, 'Internal error.', 500);
   }
-});
+}
 
-/** DELETE /events/:id  (soft) */
-router.delete('/:id', roleGuard('ADMIN', 'SUBADMIN'), async (req: Request, res: Response) => {
+/** Deactivate event (soft delete) */
+export async function deactivateEvent(req: Request, res: Response): Promise<void> {
   try {
     await EventService.deactivate(parseInt(req.params.id, 10));
+    await writeAuditLog(
+      resolveActorId(req.user!),
+      'DEACTIVATE_EVENT',
+      'events',
+      parseInt(req.params.id, 10),
+      req.ipAddress ?? null
+    );
     sendSuccess(res, {}, 200, 'Event deactivated.');
-  } catch { sendError(res, 'Internal error.', 500); }
-});
+  } catch {
+    sendError(res, 'Internal error.', 500);
+  }
+}
 
 // ─── Participants ───────────────────────────────────────────
 
-/** POST /events/:id/participants   body: { user_id, role } */
-router.post('/:id/participants', async (req: Request, res: Response) => {
+/** Register participant for an event */
+export async function registerParticipant(req: Request, res: Response): Promise<void> {
   try {
-    const participant = await EventService.registerParticipant(parseInt(req.params.id, 10), req.body);
+    const participant = await EventService.registerParticipant(
+      parseInt(req.params.id, 10),
+      req.body
+    );
     sendSuccess(res, participant, 201, 'Registered for event.');
   } catch (err) {
-    if (err instanceof ApiError) return sendError(res, err.message, err.statusCode);
+    if (err instanceof ApiError) {
+      sendError(res, err.message, err.statusCode);
+      return;
+    }
     sendError(res, 'Internal error.', 500);
   }
-});
+}
 
-/** GET /events/:id/participants */
-router.get('/:id/participants', async (req: Request, res: Response) => {
+/** Get all participants for an event */
+export async function getEventParticipants(req: Request, res: Response): Promise<void> {
   try {
     const list = await EventService.getParticipantsByEvent(parseInt(req.params.id, 10));
     sendSuccess(res, list);
-  } catch { sendError(res, 'Internal error.', 500); }
-});
+  } catch {
+    sendError(res, 'Internal error.', 500);
+  }
+}
 
 // ─── Attendance ─────────────────────────────────────────────
 
-/** POST /events/attendance/scan   body: { qr_code_token, user_id } */
-router.post('/attendance/scan', async (req: Request, res: Response) => {
+/** Mark attendance via QR code scan */
+export async function markAttendance(req: Request, res: Response): Promise<void> {
   try {
     const attendance = await EventService.markAttendance(req.body);
     sendSuccess(res, attendance, 200, 'Attendance recorded.');
   } catch (err) {
-    if (err instanceof ApiError) return sendError(res, err.message, err.statusCode);
+    if (err instanceof ApiError) {
+      sendError(res, err.message, err.statusCode);
+      return;
+    }
     sendError(res, 'Internal error.', 500);
   }
-});
+}
 
-/** GET /events/attendance/user/:userId   — personal attendance history */
-router.get('/attendance/user/:userId', async (req: Request, res: Response) => {
+/** Get attendance history for a user */
+export async function getUserAttendanceHistory(req: Request, res: Response): Promise<void> {
   try {
     const history = await EventService.getAttendanceHistory(parseInt(req.params.userId, 10));
     sendSuccess(res, history);
-  } catch { sendError(res, 'Internal error.', 500); }
-});
+  } catch {
+    sendError(res, 'Internal error.', 500);
+  }
+}
 
 // ─── Reports ────────────────────────────────────────────────
 
-/** GET /events/:id/report   — full event attendance report */
-router.get('/:id/report', async (req: Request, res: Response) => {
+/** Generate full attendance report for an event */
+export async function getEventAttendanceReport(req: Request, res: Response): Promise<void> {
   try {
     const report = await EventService.generateAttendanceReport(parseInt(req.params.id, 10));
     sendSuccess(res, report);
   } catch (err) {
-    if (err instanceof ApiError) return sendError(res, err.message, err.statusCode);
+    if (err instanceof ApiError) {
+      sendError(res, err.message, err.statusCode);
+      return;
+    }
     sendError(res, 'Internal error.', 500);
   }
-});
-
-export default router;
+}
